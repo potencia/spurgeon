@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/potencia/spurgeon/issues"
   },
-  "homepage": "https://github.com/potencia/spurgeon"
+  "homepage": "https://github.com/potencia/spurgeon",
+  "dependencies": {
+    "q": "^1.0.1"
+  }
 }
