@@ -13,7 +13,17 @@ function Spurgeon () {
 }
 
 function buildOperations (context, db) {
-    var spurgeon = new Spurgeon(), pointRequest, passageRequest, inputChapterRequest;
+    var spurgeon = new Spurgeon(),
+    pointRequest, passageRequest, inputChapterRequest,
+    endTag = '@@END@@';
+
+    context.__defineGetter__('Q', function () {
+        return Q;
+    });
+
+    context.__defineGetter__('db', function () {
+        return db;
+    });
 
     context.__defineGetter__('root', function () {
         return spurgeon.root;
@@ -128,18 +138,21 @@ function buildOperations (context, db) {
     })
     .step({
         prompt : 'verse text',
-        repeat : function (input) {
-            return !!input.length;
-        },
         process : function (verseText) {
-            if (verseText) {
+            if (verseText && verseText !== endTag) {
                 this.verses.push(verseText);
             }
+        },
+        repeat : function (input) {
+            return !!input.length && input !== endTag;
         }
     })
     .whenFinished(function () {
         var self = this;
-        return self.verses.map(function (verseText, index) {
+        if (!context.inputVerses) {
+            context.inputVerses = [];
+        }
+        Array.prototype.push.apply(context.inputVerses, self.verses.map(function (verseText, index) {
             return {
                 version : self.version,
                 book : self.book,
@@ -147,7 +160,7 @@ function buildOperations (context, db) {
                 verse : index + 1,
                 text : verseText
             };
-        });
+        }));
     });
 
     context.input.__defineGetter__('chapter', function () {
