@@ -1,7 +1,200 @@
 'use strict';
 
 var expect = require('chai').expect,
-Reference = require('../lib/reference');
+Reference = require('../lib/reference'),
+db = {
+    asv : {
+        john : {
+            1 : {
+                1 : { book : 'John', chapter : 1, verse : 1, version : 'ASV',
+                      text : 'In the beginning was the Word, and the Word was with God, and the Word was God.' },
+                2 : { book : 'John', chapter : 1, verse : 2, version : 'ASV',
+                      text : 'The same was in the beginning with God.' },
+                3 : { book : 'John', chapter : 1, verse : 3, version : 'ASV',
+                      text : 'All things were made through him; and without him was not anything made that hath been made.' },
+                4 : { book : 'John', chapter : 1, verse : 4, version : 'ASV',
+                      text : 'In him was life; and the life was the light of men.' },
+                5 : { book : 'John', chapter : 1, verse : 5, version : 'ASV',
+                      text : 'And the light shineth in the darkness; and the darkness apprehended it not.' },
+                6 : { book : 'John', chapter : 1, verse : 6, version : 'ASV',
+                      text : 'There came a man, sent from God, whose name was John.' },
+                7 : { book : 'John', chapter : 1, verse : 7, version : 'ASV',
+                      text : 'The same came for witness, that he might bear witness of the light, that all might believe through him.' },
+                8 : { book : 'John', chapter : 1, verse : 8, version : 'ASV',
+                      text : 'He was not the light, but came that he might bear witness of the light.' },
+                9 : { book : 'John', chapter : 1, verse : 9, version : 'ASV',
+                      text : 'There was the true light, even the light which lighteth every man, coming into the world.' },
+                10 : { book : 'John', chapter : 1, verse : 10, version : 'ASV',
+                       text : 'He was in the world, and the world was made through him, and the world knew him not.' },
+                11 : { book : 'John', chapter : 1, verse : 11, version : 'ASV',
+                       text : 'He came unto his own, and they that were his own received him not.' },
+                12 : { book : 'John', chapter : 1, verse : 12, version : 'ASV',
+                       text : 'But as many as received him, to them gave he the right to become children of God, even to them that believe on his name:' },
+                13 : { book : 'John', chapter : 1, verse : 13, version : 'ASV',
+                       text : 'who were born, not of blood, nor of the will of the flesh, nor of the will of man, but of God.' },
+                14 : { book : 'John', chapter : 1, verse : 14, version : 'ASV',
+                       text : 'And the Word became flesh, and dwelt among us (and we beheld his glory, glory as of the only begotten from the Father), full of grace and truth.' }
+            }
+        },
+        rev : {
+            1 : {
+                20 : { book : 'Revelation', chapter : 1, verse : 20, version : 'ASV',
+                       text : 'the mystery of the seven stars which thou sawest in my right hand, and the seven golden candlesticks. The seven stars are the angels of the seven churches: and the seven candlesticks are seven churches.'
+                }
+            }
+        }
+    },
+    kjv : {
+        gen : {
+            1 : {
+                1 : { book : 'Genesis', chapter : 1, verse : 1, version : 'KJV',
+                      text : 'In the beginning God create the heaven and the earth.' }
+            }
+        },
+        john : {
+            1 : {
+                1 : { book : 'John', chapter : 1, verse : 1, version : 'KJV',
+                      text : 'In the beginning was the Word, and the Word was with God, and the Word was God.' },
+                2 : { book : 'John', chapter : 1, verse : 2, version : 'KJV',
+                      text : 'The same was in the beginning with God.' },
+                3 : { book : 'John', chapter : 1, verse : 3, version : 'KJV',
+                      text : 'All things were made by him; and without him was not any thing made that was made.' },
+                4 : { book : 'John', chapter : 1, verse : 4, version : 'KJV',
+                      text : 'In him was life; and the life was the light of men.' },
+                5 : { book : 'John', chapter : 1, verse : 5, version : 'KJV',
+                      text : 'And the light shineth in darkness; and the darkness comprehended it not.' },
+                6 : { book : 'John', chapter : 1, verse : 6, version : 'KJV',
+                      text : 'There was a man sent from God, whose name was John.' },
+                7 : { book : 'John', chapter : 1, verse : 7, version : 'KJV',
+                      text : 'The same came for a witness, to bear witness of the Light, that all men through him might believe.' },
+                8 : { book : 'John', chapter : 1, verse : 8, version : 'KJV',
+                      text : 'He was not that Light, but was sent to bear witness of that Light.' },
+                9 : { book : 'John', chapter : 1, verse : 9, version : 'KJV',
+                      text : 'That was the true Light, which lighteth every man that cometh into the world.' },
+                10 : { book : 'John', chapter : 1, verse : 10, version : 'KJV',
+                       text : 'He was in the world, and the world was made by him, and the world knew him not.' },
+                11 : { book : 'John', chapter : 1, verse : 11, version : 'KJV',
+                       text : 'He came unto his own, and his own received him not.' },
+                12 : { book : 'John', chapter : 1, verse : 12, version : 'KJV',
+                       text : 'But as many as received him, to them gave he power to become the sons of God, even to them that believe on his name:' },
+                13 : { book : 'John', chapter : 1, verse : 13, version : 'KJV',
+                       text : 'Which were born, not of blood, nor of the will of the flesh, nor of the will of man, but of God.' },
+                14 : { book : 'John', chapter : 1, verse : 14, version : 'KJV',
+                       text : 'And the Word was made flesh, and dwelt among us, (and we beheld his glory, the glory as of the only begotten of the Father,) full of grace and truth.' },
+                15 : { book : 'John', chapter : 1, verse : 15, version : 'KJV',
+                       text : 'John bare witness of him, and cried, saying, This was he of whom I spake, He that cometh after me is preferred before me: for he was before me.' },
+                16 : { book : 'John', chapter : 1, verse : 16, version : 'KJV',
+                       text : 'And of his fulness have all we received, and grace for grace.' },
+                17 : { book : 'John', chapter : 1, verse : 17, version : 'KJV',
+                       text : 'For the law was given by Moses, but grace and truth came by Jesus Christ.' },
+                18 : { book : 'John', chapter : 1, verse : 18, version : 'KJV',
+                       text : 'No man hath seen God at any time; the only begotten Son, which is in the bosom of the Father, he hath declared him.' },
+                19 : { book : 'John', chapter : 1, verse : 19, version : 'KJV',
+                       text : 'And this is the record of John, when the Jews sent priests and Levites from Jerusalem to ask him, Who art thou?' },
+                20 : { book : 'John', chapter : 1, verse : 20, version : 'KJV',
+                       text : 'And he confessed, and denied not; but confessed, I am not the Christ.' },
+                21 : { book : 'John', chapter : 1, verse : 21, version : 'KJV',
+                       text : 'And they asked him, What then? Art thou Elias? And he saith, I am not. Art thou that prophet? And he answered, No.' },
+                22 : { book : 'John', chapter : 1, verse : 22, version : 'KJV',
+                       text : 'Then said they unto him, Who art thou? that we may give an answer to them that sent us. What sayest thou of thyself?' },
+                23 : { book : 'John', chapter : 1, verse : 23, version : 'KJV',
+                       text : 'He said, I am the voice of one crying in the wilderness, Make straight the way of the Lord, as said the prophet Esaias.' },
+                24 : { book : 'John', chapter : 1, verse : 24, version : 'KJV',
+                       text : 'And they which were sent were of the Pharisees.' },
+                25 : { book : 'John', chapter : 1, verse : 25, version : 'KJV',
+                       text : 'And they asked him, and said unto him, Why baptizest thou then, if thou be not that Christ, nor Elias, neither that prophet?' },
+                26 : { book : 'John', chapter : 1, verse : 26, version : 'KJV',
+                       text : 'John answered them, saying, I baptize with water: but there standeth one among you, whom ye know not;' },
+                27 : { book : 'John', chapter : 1, verse : 27, version : 'KJV',
+                       text : 'He it is, who coming after me is preferred before me, whose shoe\'s latchet I am not worthy to unloose.' },
+                28 : { book : 'John', chapter : 1, verse : 28, version : 'KJV',
+                       text : 'These things were done in Bethabara beyond Jordan, where John was baptizing.' },
+                29 : { book : 'John', chapter : 1, verse : 29, version : 'KJV',
+                       text : 'The next day John seeth Jesus coming unto him, and saith, Behold the Lamb of God, which taketh away the sin of the world.' },
+                30 : { book : 'John', chapter : 1, verse : 30, version : 'KJV',
+                       text : 'This is he of whom I said, After me cometh a man which is preferred before me: for he was before me.' },
+                31 : { book : 'John', chapter : 1, verse : 31, version : 'KJV',
+                       text : 'And I knew him not: but that he should be made manifest to Israel, therefore am I come baptizing with water.' },
+                32 : { book : 'John', chapter : 1, verse : 32, version : 'KJV',
+                       text : 'And John bare record, saying, I saw the Spirit descending from heaven like a dove, and it abode upon him.' },
+                33 : { book : 'John', chapter : 1, verse : 33, version : 'KJV',
+                       text : 'And I knew him not: but he that sent me to baptize with water, the same said unto me, Upon whom thou shalt see the Spirit descending, and remaining on him, the same is he which baptizeth with the Holy Ghost.' },
+                34 : { book : 'John', chapter : 1, verse : 34, version : 'KJV',
+                       text : 'And I saw, and bare record that this is the Son of God.' },
+                35 : { book : 'John', chapter : 1, verse : 35, version : 'KJV',
+                       text : 'Again the next day after John stood, and two of his disciples;' },
+                36 : { book : 'John', chapter : 1, verse : 36, version : 'KJV',
+                       text : 'And looking upon Jesus as he walked, he saith, Behold the Lamb of God!' },
+                37 : { book : 'John', chapter : 1, verse : 37, version : 'KJV',
+                       text : 'And the two disciples heard him speak, and they followed Jesus.' },
+                38 : { book : 'John', chapter : 1, verse : 38, version : 'KJV',
+                       text : 'Then Jesus turned, and saw them following, and saith unto them, What seek ye? They said unto him, Rabbi, (which is to say, being interpreted, Master,) where dwellest thou?' },
+                39 : { book : 'John', chapter : 1, verse : 39, version : 'KJV',
+                       text : 'He saith unto them, Come and see. They came and saw where he dwelt, and abode with him that day: for it was about the tenth hour.' },
+                40 : { book : 'John', chapter : 1, verse : 40, version : 'KJV',
+                       text : 'One of the two which heard John speak, and followed him, was Andrew, Simon Peter\'s brother.' },
+                41 : { book : 'John', chapter : 1, verse : 41, version : 'KJV',
+                       text : 'He first findeth his own brother Simon, and saith unto him, We have found the Messias, which is, being interpreted, the Christ.' },
+                42 : { book : 'John', chapter : 1, verse : 42, version : 'KJV',
+                       text : 'And he brought him to Jesus. And when Jesus beheld him, he said, Thou art Simon the son of Jona: thou shalt be called Cephas, which is by interpretation, A stone.' },
+                43 : { book : 'John', chapter : 1, verse : 43, version : 'KJV',
+                       text : 'The day following Jesus would go forth into Galilee, and findeth Philip, and saith unto him, Follow me.' },
+                44 : { book : 'John', chapter : 1, verse : 44, version : 'KJV',
+                       text : 'Now Philip was of Bethsaida, the city of Andrew and Peter.' },
+                45 : { book : 'John', chapter : 1, verse : 45, version : 'KJV',
+                       text : 'Philip findeth Nathanael, and saith unto him, We have found him, of whom Moses in the law, and the prophets, did write, Jesus of Nazareth, the son of Joseph.' },
+                46 : { book : 'John', chapter : 1, verse : 46, version : 'KJV',
+                       text : 'And Nathanael said unto him, Can there any good thing come out of Nazareth? Philip saith unto him, Come and see.' },
+                47 : { book : 'John', chapter : 1, verse : 47, version : 'KJV',
+                       text : 'Jesus saw Nathanael coming to him, and saith of him, Behold an Israelite indeed, in whom is no guile!' },
+                48 : { book : 'John', chapter : 1, verse : 48, version : 'KJV',
+                       text : 'Nathanael saith unto him, Whence knowest thou me? Jesus answered and said unto him, Before that Philip called thee, when thou wast under the fig tree, I saw thee.' },
+                49 : { book : 'John', chapter : 1, verse : 49, version : 'KJV',
+                       text : 'Nathanael answered and saith unto him, Rabbi, thou art the Son of God; thou art the King of Israel.' },
+                50 : { book : 'John', chapter : 1, verse : 50, version : 'KJV',
+                       text : 'Jesus answered and said unto him, Because I said unto thee, I saw thee under the fig tree, believest thou? thou shalt see greater things than these.' },
+                51 : { book : 'John', chapter : 1, verse : 51, version : 'KJV',
+                       text : 'And he saith unto him, Verily, verily, I say unto you, Hereafter ye shall see heaven open, and the angels of God ascending and descending upon the Son of man.' }
+            },
+            2 : {
+                1 : { book : 'John', chapter : 2, verse : 1, version : 'KJV',
+                      text : 'And the third day there was a marriage in Cana of Galilee; and the mother of Jesus was there:' },
+                2 : { book : 'John', chapter : 2, verse : 2, version : 'KJV',
+                      text : 'And both Jesus was called, and his disciples, to the marriage.' },
+                3 : { book : 'John', chapter : 2, verse : 3, version : 'KJV',
+                      text : 'And when they wanted wine, the mother of Jesus saith unto him, They have no wine.' },
+                4 : { book : 'John', chapter : 2, verse : 4, version : 'KJV',
+                      text : 'Jesus saith unto her, Woman, what have I to do with thee? mine hour is not yet come.' },
+                5 : { book : 'John', chapter : 2, verse : 5, version : 'KJV',
+                      text : 'His mother saith unto the servants, Whatsoever he saith unto you, do it.' },
+                6 : { book : 'John', chapter : 2, verse : 6, version : 'KJV',
+                      text : 'And there were set there six waterpots of stone, after the manner of the purifying of the Jews, containing two or three firkins apiece.' },
+                7 : { book : 'John', chapter : 2, verse : 7, version : 'KJV',
+                      text : 'Jesus saith unto them, Fill the waterpots with water. And they filled them up to the brim.' },
+                8 : { book : 'John', chapter : 2, verse : 8, version : 'KJV',
+                      text : 'And he saith unto them, Draw out now, and bear unto the governor of the feast. And they bare it.' },
+                9 : { book : 'John', chapter : 2, verse : 9, version : 'KJV',
+                      text : 'When the ruler of the feast had tasted the water that was made wine, and knew not whence it was: (but the servants which drew the water knew;) the governor of the feast called the bridegroom,' },
+                10 : { book : 'John', chapter : 2, verse : 10, version : 'KJV',
+                       text : 'And saith unto him, Every man at the beginning doth set forth good wine; and when men have well drunk, then that which is worse: but thou hast kept the good wine until now.' },
+                11 : { book : 'John', chapter : 2, verse : 11, version : 'KJV',
+                       text : 'This beginning of miracles did Jesus in Cana of Galilee, and manifested forth his glory; and his disciples believed on him.' }
+            }
+        },
+        rev : {
+            1 : {
+                1 : { book : 'Revelation', chapter : 1, verse : 1, version : 'KJV',
+                      text : 'The Revelation of Jesus Christ, which God gave unto him, to shew unto his servants things which must shortly come to pass; and he sent and signified it by his angel unto his servant John:' },
+                20 : { book : 'Revelation', chapter : 1, verse : 20, version : 'KJV',
+                       text : 'The mystery of the seven stars which thou sawest in my right hand, and the seven golden candlesticks. The seven stars are the angels of the seven churches: and the seven candlesticks which thou sawest are the seven churches.' }
+            },
+            22 : {
+                21 : { book : 'Revelation', chapter : 22, verse : 21, version : 'KJV',
+                       text : 'The grace of our Lord Jesus Christ be with you all. Amen.' }
+            }
+        }
+    }
+};
 
 describe('Reference', function () {
     describe('static .split()', function () {
@@ -874,209 +1067,15 @@ describe('Reference', function () {
         });
     });
 
-    var verses = {
-        asv : {
-            john : {
-                1 : {
-                    1 : { book : 'John', chapter : 1, verse : 1, version : 'ASV',
-                          text : 'In the beginning was the Word, and the Word was with God, and the Word was God.' },
-                    2 : { book : 'John', chapter : 1, verse : 2, version : 'ASV',
-                          text : 'The same was in the beginning with God.' },
-                    3 : { book : 'John', chapter : 1, verse : 3, version : 'ASV',
-                          text : 'All things were made through him; and without him was not anything made that hath been made.' },
-                    4 : { book : 'John', chapter : 1, verse : 4, version : 'ASV',
-                          text : 'In him was life; and the life was the light of men.' },
-                    5 : { book : 'John', chapter : 1, verse : 5, version : 'ASV',
-                          text : 'And the light shineth in the darkness; and the darkness apprehended it not.' },
-                    6 : { book : 'John', chapter : 1, verse : 6, version : 'ASV',
-                          text : 'There came a man, sent from God, whose name was John.' },
-                    7 : { book : 'John', chapter : 1, verse : 7, version : 'ASV',
-                          text : 'The same came for witness, that he might bear witness of the light, that all might believe through him.' },
-                    8 : { book : 'John', chapter : 1, verse : 8, version : 'ASV',
-                          text : 'He was not the light, but came that he might bear witness of the light.' },
-                    9 : { book : 'John', chapter : 1, verse : 9, version : 'ASV',
-                          text : 'There was the true light, even the light which lighteth every man, coming into the world.' },
-                    10 : { book : 'John', chapter : 1, verse : 10, version : 'ASV',
-                           text : 'He was in the world, and the world was made through him, and the world knew him not.' },
-                    11 : { book : 'John', chapter : 1, verse : 11, version : 'ASV',
-                           text : 'He came unto his own, and they that were his own received him not.' },
-                    12 : { book : 'John', chapter : 1, verse : 12, version : 'ASV',
-                           text : 'But as many as received him, to them gave he the right to become children of God, even to them that believe on his name:' },
-                    13 : { book : 'John', chapter : 1, verse : 13, version : 'ASV',
-                           text : 'who were born, not of blood, nor of the will of the flesh, nor of the will of man, but of God.' },
-                    14 : { book : 'John', chapter : 1, verse : 14, version : 'ASV',
-                           text : 'And the Word became flesh, and dwelt among us (and we beheld his glory, glory as of the only begotten from the Father), full of grace and truth.' }
-                }
-            },
-            rev : {
-                1 : {
-                    20 : { book : 'Revelation', chapter : 1, verse : 20, version : 'ASV',
-                           text : 'the mystery of the seven stars which thou sawest in my right hand, and the seven golden candlesticks. The seven stars are the angels of the seven churches: and the seven candlesticks are seven churches.'
-                    }
-                }
-            }
-        },
-        kjv : {
-            gen : {
-                1 : {
-                    1 : { book : 'Genesis', chapter : 1, verse : 1, version : 'KJV',
-                          text : 'In the beginning God create the heaven and the earth.' }
-                }
-            },
-            john : {
-                1 : {
-                    1 : { book : 'John', chapter : 1, verse : 1, version : 'KJV',
-                          text : 'In the beginning was the Word, and the Word was with God, and the Word was God.' },
-                    2 : { book : 'John', chapter : 1, verse : 2, version : 'KJV',
-                          text : 'The same was in the beginning with God.' },
-                    3 : { book : 'John', chapter : 1, verse : 3, version : 'KJV',
-                          text : 'All things were made by him; and without him was not any thing made that was made.' },
-                    4 : { book : 'John', chapter : 1, verse : 4, version : 'KJV',
-                          text : 'In him was life; and the life was the light of men.' },
-                    5 : { book : 'John', chapter : 1, verse : 5, version : 'KJV',
-                          text : 'And the light shineth in darkness; and the darkness comprehended it not.' },
-                    6 : { book : 'John', chapter : 1, verse : 6, version : 'KJV',
-                          text : 'There was a man sent from God, whose name was John.' },
-                    7 : { book : 'John', chapter : 1, verse : 7, version : 'KJV',
-                          text : 'The same came for a witness, to bear witness of the Light, that all men through him might believe.' },
-                    8 : { book : 'John', chapter : 1, verse : 8, version : 'KJV',
-                          text : 'He was not that Light, but was sent to bear witness of that Light.' },
-                    9 : { book : 'John', chapter : 1, verse : 9, version : 'KJV',
-                          text : 'That was the true Light, which lighteth every man that cometh into the world.' },
-                    10 : { book : 'John', chapter : 1, verse : 10, version : 'KJV',
-                           text : 'He was in the world, and the world was made by him, and the world knew him not.' },
-                    11 : { book : 'John', chapter : 1, verse : 11, version : 'KJV',
-                           text : 'He came unto his own, and his own received him not.' },
-                    12 : { book : 'John', chapter : 1, verse : 12, version : 'KJV',
-                           text : 'But as many as received him, to them gave he power to become the sons of God, even to them that believe on his name:' },
-                    13 : { book : 'John', chapter : 1, verse : 13, version : 'KJV',
-                           text : 'Which were born, not of blood, nor of the will of the flesh, nor of the will of man, but of God.' },
-                    14 : { book : 'John', chapter : 1, verse : 14, version : 'KJV',
-                           text : 'And the Word was made flesh, and dwelt among us, (and we beheld his glory, the glory as of the only begotten of the Father,) full of grace and truth.' },
-                    15 : { book : 'John', chapter : 1, verse : 15, version : 'KJV',
-                           text : 'John bare witness of him, and cried, saying, This was he of whom I spake, He that cometh after me is preferred before me: for he was before me.' },
-                    16 : { book : 'John', chapter : 1, verse : 16, version : 'KJV',
-                           text : 'And of his fulness have all we received, and grace for grace.' },
-                    17 : { book : 'John', chapter : 1, verse : 17, version : 'KJV',
-                           text : 'For the law was given by Moses, but grace and truth came by Jesus Christ.' },
-                    18 : { book : 'John', chapter : 1, verse : 18, version : 'KJV',
-                           text : 'No man hath seen God at any time; the only begotten Son, which is in the bosom of the Father, he hath declared him.' },
-                    19 : { book : 'John', chapter : 1, verse : 19, version : 'KJV',
-                           text : 'And this is the record of John, when the Jews sent priests and Levites from Jerusalem to ask him, Who art thou?' },
-                    20 : { book : 'John', chapter : 1, verse : 20, version : 'KJV',
-                           text : 'And he confessed, and denied not; but confessed, I am not the Christ.' },
-                    21 : { book : 'John', chapter : 1, verse : 21, version : 'KJV',
-                           text : 'And they asked him, What then? Art thou Elias? And he saith, I am not. Art thou that prophet? And he answered, No.' },
-                    22 : { book : 'John', chapter : 1, verse : 22, version : 'KJV',
-                           text : 'Then said they unto him, Who art thou? that we may give an answer to them that sent us. What sayest thou of thyself?' },
-                    23 : { book : 'John', chapter : 1, verse : 23, version : 'KJV',
-                           text : 'He said, I am the voice of one crying in the wilderness, Make straight the way of the Lord, as said the prophet Esaias.' },
-                    24 : { book : 'John', chapter : 1, verse : 24, version : 'KJV',
-                           text : 'And they which were sent were of the Pharisees.' },
-                    25 : { book : 'John', chapter : 1, verse : 25, version : 'KJV',
-                           text : 'And they asked him, and said unto him, Why baptizest thou then, if thou be not that Christ, nor Elias, neither that prophet?' },
-                    26 : { book : 'John', chapter : 1, verse : 26, version : 'KJV',
-                           text : 'John answered them, saying, I baptize with water: but there standeth one among you, whom ye know not;' },
-                    27 : { book : 'John', chapter : 1, verse : 27, version : 'KJV',
-                           text : 'He it is, who coming after me is preferred before me, whose shoe\'s latchet I am not worthy to unloose.' },
-                    28 : { book : 'John', chapter : 1, verse : 28, version : 'KJV',
-                           text : 'These things were done in Bethabara beyond Jordan, where John was baptizing.' },
-                    29 : { book : 'John', chapter : 1, verse : 29, version : 'KJV',
-                           text : 'The next day John seeth Jesus coming unto him, and saith, Behold the Lamb of God, which taketh away the sin of the world.' },
-                    30 : { book : 'John', chapter : 1, verse : 30, version : 'KJV',
-                           text : 'This is he of whom I said, After me cometh a man which is preferred before me: for he was before me.' },
-                    31 : { book : 'John', chapter : 1, verse : 31, version : 'KJV',
-                           text : 'And I knew him not: but that he should be made manifest to Israel, therefore am I come baptizing with water.' },
-                    32 : { book : 'John', chapter : 1, verse : 32, version : 'KJV',
-                           text : 'And John bare record, saying, I saw the Spirit descending from heaven like a dove, and it abode upon him.' },
-                    33 : { book : 'John', chapter : 1, verse : 33, version : 'KJV',
-                           text : 'And I knew him not: but he that sent me to baptize with water, the same said unto me, Upon whom thou shalt see the Spirit descending, and remaining on him, the same is he which baptizeth with the Holy Ghost.' },
-                    34 : { book : 'John', chapter : 1, verse : 34, version : 'KJV',
-                           text : 'And I saw, and bare record that this is the Son of God.' },
-                    35 : { book : 'John', chapter : 1, verse : 35, version : 'KJV',
-                           text : 'Again the next day after John stood, and two of his disciples;' },
-                    36 : { book : 'John', chapter : 1, verse : 36, version : 'KJV',
-                           text : 'And looking upon Jesus as he walked, he saith, Behold the Lamb of God!' },
-                    37 : { book : 'John', chapter : 1, verse : 37, version : 'KJV',
-                           text : 'And the two disciples heard him speak, and they followed Jesus.' },
-                    38 : { book : 'John', chapter : 1, verse : 38, version : 'KJV',
-                           text : 'Then Jesus turned, and saw them following, and saith unto them, What seek ye? They said unto him, Rabbi, (which is to say, being interpreted, Master,) where dwellest thou?' },
-                    39 : { book : 'John', chapter : 1, verse : 39, version : 'KJV',
-                           text : 'He saith unto them, Come and see. They came and saw where he dwelt, and abode with him that day: for it was about the tenth hour.' },
-                    40 : { book : 'John', chapter : 1, verse : 40, version : 'KJV',
-                           text : 'One of the two which heard John speak, and followed him, was Andrew, Simon Peter\'s brother.' },
-                    41 : { book : 'John', chapter : 1, verse : 41, version : 'KJV',
-                           text : 'He first findeth his own brother Simon, and saith unto him, We have found the Messias, which is, being interpreted, the Christ.' },
-                    42 : { book : 'John', chapter : 1, verse : 42, version : 'KJV',
-                           text : 'And he brought him to Jesus. And when Jesus beheld him, he said, Thou art Simon the son of Jona: thou shalt be called Cephas, which is by interpretation, A stone.' },
-                    43 : { book : 'John', chapter : 1, verse : 43, version : 'KJV',
-                           text : 'The day following Jesus would go forth into Galilee, and findeth Philip, and saith unto him, Follow me.' },
-                    44 : { book : 'John', chapter : 1, verse : 44, version : 'KJV',
-                           text : 'Now Philip was of Bethsaida, the city of Andrew and Peter.' },
-                    45 : { book : 'John', chapter : 1, verse : 45, version : 'KJV',
-                           text : 'Philip findeth Nathanael, and saith unto him, We have found him, of whom Moses in the law, and the prophets, did write, Jesus of Nazareth, the son of Joseph.' },
-                    46 : { book : 'John', chapter : 1, verse : 46, version : 'KJV',
-                           text : 'And Nathanael said unto him, Can there any good thing come out of Nazareth? Philip saith unto him, Come and see.' },
-                    47 : { book : 'John', chapter : 1, verse : 47, version : 'KJV',
-                           text : 'Jesus saw Nathanael coming to him, and saith of him, Behold an Israelite indeed, in whom is no guile!' },
-                    48 : { book : 'John', chapter : 1, verse : 48, version : 'KJV',
-                           text : 'Nathanael saith unto him, Whence knowest thou me? Jesus answered and said unto him, Before that Philip called thee, when thou wast under the fig tree, I saw thee.' },
-                    49 : { book : 'John', chapter : 1, verse : 49, version : 'KJV',
-                           text : 'Nathanael answered and saith unto him, Rabbi, thou art the Son of God; thou art the King of Israel.' },
-                    50 : { book : 'John', chapter : 1, verse : 50, version : 'KJV',
-                           text : 'Jesus answered and said unto him, Because I said unto thee, I saw thee under the fig tree, believest thou? thou shalt see greater things than these.' },
-                    51 : { book : 'John', chapter : 1, verse : 51, version : 'KJV',
-                           text : 'And he saith unto him, Verily, verily, I say unto you, Hereafter ye shall see heaven open, and the angels of God ascending and descending upon the Son of man.' }
-                },
-                2 : {
-                    1 : { book : 'John', chapter : 2, verse : 1, version : 'KJV',
-                          text : 'And the third day there was a marriage in Cana of Galilee; and the mother of Jesus was there:' },
-                    2 : { book : 'John', chapter : 2, verse : 2, version : 'KJV',
-                          text : 'And both Jesus was called, and his disciples, to the marriage.' },
-                    3 : { book : 'John', chapter : 2, verse : 3, version : 'KJV',
-                          text : 'And when they wanted wine, the mother of Jesus saith unto him, They have no wine.' },
-                    4 : { book : 'John', chapter : 2, verse : 4, version : 'KJV',
-                          text : 'Jesus saith unto her, Woman, what have I to do with thee? mine hour is not yet come.' },
-                    5 : { book : 'John', chapter : 2, verse : 5, version : 'KJV',
-                          text : 'His mother saith unto the servants, Whatsoever he saith unto you, do it.' },
-                    6 : { book : 'John', chapter : 2, verse : 6, version : 'KJV',
-                          text : 'And there were set there six waterpots of stone, after the manner of the purifying of the Jews, containing two or three firkins apiece.' },
-                    7 : { book : 'John', chapter : 2, verse : 7, version : 'KJV',
-                          text : 'Jesus saith unto them, Fill the waterpots with water. And they filled them up to the brim.' },
-                    8 : { book : 'John', chapter : 2, verse : 8, version : 'KJV',
-                          text : 'And he saith unto them, Draw out now, and bear unto the governor of the feast. And they bare it.' },
-                    9 : { book : 'John', chapter : 2, verse : 9, version : 'KJV',
-                          text : 'When the ruler of the feast had tasted the water that was made wine, and knew not whence it was: (but the servants which drew the water knew;) the governor of the feast called the bridegroom,' },
-                    10 : { book : 'John', chapter : 2, verse : 10, version : 'KJV',
-                           text : 'And saith unto him, Every man at the beginning doth set forth good wine; and when men have well drunk, then that which is worse: but thou hast kept the good wine until now.' },
-                    11 : { book : 'John', chapter : 2, verse : 11, version : 'KJV',
-                           text : 'This beginning of miracles did Jesus in Cana of Galilee, and manifested forth his glory; and his disciples believed on him.' }
-                }
-            },
-            rev : {
-                1 : {
-                    1 : { book : 'Revelation', chapter : 1, verse : 1, version : 'KJV',
-                          text : 'The Revelation of Jesus Christ, which God gave unto him, to shew unto his servants things which must shortly come to pass; and he sent and signified it by his angel unto his servant John:' },
-                    20 : { book : 'Revelation', chapter : 1, verse : 20, version : 'KJV',
-                           text : 'The mystery of the seven stars which thou sawest in my right hand, and the seven golden candlesticks. The seven stars are the angels of the seven churches: and the seven candlesticks which thou sawest are the seven churches.' }
-                },
-                22 : {
-                    21 : { book : 'Revelation', chapter : 22, verse : 21, version : 'KJV',
-                           text : 'The grace of our Lord Jesus Christ be with you all. Amen.' }
-                }
-            }
-        }
-    };
-
     describe('static .normalize()', function () {
         it('should return an array of objects', function () {
-            expect(Reference.normalize(verses.kjv.gen[1][1])).to.be.an('array');
+            expect(Reference.normalize(db.kjv.gen[1][1])).to.be.an('array');
         });
 
         describe('returned objects', function () {
             var normalized;
             beforeEach(function () {
-                normalized = Reference.normalize(verses.kjv.gen[1][1])[0];
+                normalized = Reference.normalize(db.kjv.gen[1][1])[0];
             });
 
             it('should have a reference string property', function () {
@@ -1168,7 +1167,7 @@ describe('Reference', function () {
             var result;
 
             beforeEach(function () {
-                result = Reference.normalize(verses.kjv.gen[1][1]);
+                result = Reference.normalize(db.kjv.gen[1][1]);
             });
 
             it('should return one object in the array', function () {
@@ -1225,7 +1224,7 @@ describe('Reference', function () {
 
             describe('when it is valid', function () {
                 it('should build one normalized object', function () {
-                    var result = Reference.normalize([verses.kjv.gen[1][1]]);
+                    var result = Reference.normalize([db.kjv.gen[1][1]]);
                     expect(result).to.have.length(1);
                     expect(result[0]).to.deep.equal({
                         reference : 'Genesis 1:1',
@@ -1245,7 +1244,7 @@ describe('Reference', function () {
 
         describe('when passed more than one non-contiguous verses', function () {
             it('should build normalized objects', function () {
-                var result = Reference.normalize([verses.kjv.gen[1][1], verses.kjv.rev[22][21]]);
+                var result = Reference.normalize([db.kjv.gen[1][1], db.kjv.rev[22][21]]);
                 expect(result).to.have.length(2);
                 expect(result[0]).to.deep.equal({
                     reference : 'Genesis 1:1',
@@ -1274,14 +1273,14 @@ describe('Reference', function () {
             });
 
             it('should order the verses by book', function () {
-                var result = Reference.normalize([verses.kjv.rev[22][21], verses.kjv.gen[1][1]]);
+                var result = Reference.normalize([db.kjv.rev[22][21], db.kjv.gen[1][1]]);
                 expect(result).to.have.length(2);
                 expect(result[0].reference).to.equal('Genesis 1:1');
                 expect(result[1].reference).to.equal('Revelation 22:21');
             });
 
             it('should order the verses by book and chapter', function () {
-                var result = Reference.normalize([verses.kjv.rev[22][21], verses.kjv.rev[1][1], verses.kjv.gen[1][1]]);
+                var result = Reference.normalize([db.kjv.rev[22][21], db.kjv.rev[1][1], db.kjv.gen[1][1]]);
                 expect(result).to.have.length(3);
                 expect(result[0].reference).to.equal('Genesis 1:1');
                 expect(result[1].reference).to.equal('Revelation 1:1');
@@ -1289,7 +1288,7 @@ describe('Reference', function () {
             });
 
             it('should order the verses by book, chapter, and verse', function () {
-                var result = Reference.normalize([verses.kjv.rev[22][21], verses.kjv.rev[1][20], verses.kjv.rev[1][1], verses.kjv.gen[1][1]]);
+                var result = Reference.normalize([db.kjv.rev[22][21], db.kjv.rev[1][20], db.kjv.rev[1][1], db.kjv.gen[1][1]]);
                 expect(result).to.have.length(4);
                 expect(result[0].reference).to.equal('Genesis 1:1');
                 expect(result[1].reference).to.equal('Revelation 1:1');
@@ -1298,7 +1297,7 @@ describe('Reference', function () {
             });
 
             it('should order the verses by book, chapter, verse, and version', function () {
-                var result = Reference.normalize([verses.kjv.rev[22][21], verses.kjv.rev[1][20], verses.kjv.rev[1][1], verses.kjv.gen[1][1], verses.asv.rev[1][20]]);
+                var result = Reference.normalize([db.kjv.rev[22][21], db.kjv.rev[1][20], db.kjv.rev[1][1], db.kjv.gen[1][1], db.asv.rev[1][20]]);
                 expect(result).to.have.length(5);
                 expect(result[0].reference).to.equal('Genesis 1:1');
                 expect(result[1].reference).to.equal('Revelation 1:1');
@@ -1314,7 +1313,7 @@ describe('Reference', function () {
             describe('when all verses are in the same version', function () {
                 describe('when all verses are in the same chapter', function () {
                     it('should build one normalized object', function () {
-                        var result = Reference.normalize(Object.keys(verses.kjv.john[1]).reverse().map(function (v) { return verses.kjv.john[1][v]; }));
+                        var result = Reference.normalize(Object.keys(db.kjv.john[1]).reverse().map(function (v) { return db.kjv.john[1][v]; }));
                         expect(result).to.have.length(1);
                         expect(result[0].reference).to.equal('John 1:1-51');
                         expect(result[0].version).to.equal('KJV');
@@ -1328,7 +1327,7 @@ describe('Reference', function () {
                 describe('when verses cross a chapter border', function () {
                     describe('when metadata for the version/book/chapter is not available', function () {
                         it('should build two normalized objects', function () {
-                            var result = Reference.normalize([verses.kjv.john[1][50], verses.kjv.john[1][51], verses.kjv.john[2][1], verses.kjv.john[2][2]]);
+                            var result = Reference.normalize([db.kjv.john[1][50], db.kjv.john[1][51], db.kjv.john[2][1], db.kjv.john[2][2]]);
                             expect(result).to.have.length(2);
                             expect(result[0].reference).to.equal('John 1:50-51');
                             expect(result[0].version).to.equal('KJV');
@@ -1345,9 +1344,9 @@ describe('Reference', function () {
                         });
                     });
 
-                    describe('when metadata for the version/book/chapter is not available', function () {
+                    describe('when metadata for the version/book/chapter is available', function () {
                         it('should build one normalized object', function () {
-                            var result = Reference.normalize([verses.kjv.john[1][50], verses.kjv.john[1][51], verses.kjv.john[2][1], verses.kjv.john[2][2]], {'KJV' : {'John' : {1 : {verseCount : 51}}}});
+                            var result = Reference.normalize([db.kjv.john[1][50], db.kjv.john[1][51], db.kjv.john[2][1], db.kjv.john[2][2]], {'KJV' : {'John' : {1 : {verseCount : 51}}}});
                             expect(result).to.have.length(1);
                             expect(result[0].reference).to.equal('John 1:50-2:2');
                             expect(result[0].version).to.equal('KJV');
@@ -1368,7 +1367,7 @@ describe('Reference', function () {
             describe('when all groups are in the same version', function () {
                 describe('when all groups are in the same chapter', function () {
                     it('should build multiple normalized object', function () {
-                        var result = Reference.normalize([1, 5, 17, 14, 16, 13, 15, 6, 2].map(function (v) { return verses.kjv.john[1][v]; }));
+                        var result = Reference.normalize([1, 5, 17, 14, 16, 13, 15, 6, 2].map(function (v) { return db.kjv.john[1][v]; }));
                         expect(result).to.have.length(3);
                         expect(result[0].reference).to.equal('John 1:1-2');
                         expect(result[0].version).to.equal('KJV');
@@ -1393,7 +1392,7 @@ describe('Reference', function () {
 
                 describe('when all groups are in different chapters', function () {
                     it('should build multiple normalized object', function () {
-                        var result = Reference.normalize([verses.kjv.john[2][1], verses.kjv.john[1][2], verses.kjv.john[1][1], verses.kjv.john[2][2]]);
+                        var result = Reference.normalize([db.kjv.john[2][1], db.kjv.john[1][2], db.kjv.john[1][1], db.kjv.john[2][2]]);
                         expect(result).to.have.length(2);
                         expect(result[0].reference).to.equal('John 1:1-2');
                         expect(result[0].version).to.equal('KJV');
@@ -1408,6 +1407,62 @@ describe('Reference', function () {
                             return d.book === 'John' && d.chapter === 2 && d.verse === i + 1;
                         })).to.be.true;
                     });
+                });
+            });
+
+            describe('when groups are in different versions', function () {
+                describe('when groups have matching references', function () {
+                    it('should sort the groups by reference, then by version', function () {
+                        var result = Reference.normalize([db.kjv.john[1][14], db.asv.john[1][1], db.kjv.john[1][2], db.asv.john[1][2], db.kjv.john[1][1], db.asv.john[1][14]]);
+                        expect(result).to.have.length(4);
+                        expect(result[0].reference).to.equal('John 1:1-2');
+                        expect(result[0].version).to.equal('ASV');
+                        expect(result[0].verses).to.have.length(2);
+                        expect(result[0].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                        })).to.be.true;
+                        expect(result[1].reference).to.equal('John 1:1-2');
+                        expect(result[1].version).to.equal('KJV');
+                        expect(result[1].verses).to.have.length(2);
+                        expect(result[1].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                        })).to.be.true;
+                        expect(result[2].reference).to.equal('John 1:14');
+                        expect(result[2].version).to.equal('ASV');
+                        expect(result[2].verses).to.have.length(1);
+                        expect(result[2].verses[0].verse).to.equal(14);
+                        expect(result[3].reference).to.equal('John 1:14');
+                        expect(result[3].version).to.equal('KJV');
+                        expect(result[3].verses).to.have.length(1);
+                        expect(result[3].verses[0].verse).to.equal(14);
+                    });
+                });
+            });
+
+            describe('when groups have same starting verse', function () {
+                it('should sort the groups by starting verse, then by descending length, then by version', function () {
+                    var result = Reference.normalize([db.kjv.john[1][14], db.asv.john[1][1], db.kjv.john[1][2], db.kjv.john[1][3], db.asv.john[1][2], db.kjv.john[1][1], db.asv.john[1][14]]);
+                    expect(result).to.have.length(4);
+                    expect(result[0].reference).to.equal('John 1:1-3');
+                    expect(result[0].version).to.equal('KJV');
+                    expect(result[0].verses).to.have.length(3);
+                    expect(result[0].verses.every(function (d, i) {
+                        return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                    })).to.be.true;
+                    expect(result[1].reference).to.equal('John 1:1-2');
+                    expect(result[1].version).to.equal('ASV');
+                    expect(result[1].verses).to.have.length(2);
+                    expect(result[1].verses.every(function (d, i) {
+                        return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                    })).to.be.true;
+                    expect(result[2].reference).to.equal('John 1:14');
+                    expect(result[2].version).to.equal('ASV');
+                    expect(result[2].verses).to.have.length(1);
+                    expect(result[2].verses[0].verse).to.equal(14);
+                    expect(result[3].reference).to.equal('John 1:14');
+                    expect(result[3].version).to.equal('KJV');
+                    expect(result[3].verses).to.have.length(1);
+                    expect(result[3].verses[0].verse).to.equal(14);
                 });
             });
         });
