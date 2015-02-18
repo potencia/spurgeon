@@ -1,3 +1,3 @@
-### spurgeon ###
+# spurgeon #
 
-# A REPL environment for building and publishing sermon notes #
+### A REPL environment for building and publishing sermon notes ###
