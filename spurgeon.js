@@ -27,42 +27,18 @@ Object.defineProperty(SpurgeonRequest.prototype, 'whenComplete', {
 
 function Spurgeon () {
     this.root = [];
+    this.currentList = this.root;
     this.position = [0];
 }
 
-Object.defineProperty(Spurgeon.prototype, 'addPoint', {
-    get : function () {
-        var self = this, request = new SpurgeonRequest(), point = {
-            type : 'point',
-            body : []
-        };
+Spurgeon.prototype.clear = function () {
+    this.currentList.length = 0;
+    this.position = [0];
+};
 
-        request.step('label')
-        .then(function (label) {
-            if (label) {
-                if (label === 'bull') {
-                    point.label = true;
-                } else {
-                    point.label = label;
-                }
-            }
-        });
-
-        request.step('text')
-        .then(function (text) {
-            point.text = text;
-        });
-
-        request.whenComplete
-        .then(function () {
-            var insertPos = self.position.pop();
-            self.root.splice(insertPos, 0, point);
-            self.position.push(insertPos + 1);
-        });
-
-        return request;
-    }
-});
+//Object.defineProperty(Spurgeon.prototype, 'addPoint', {
+//    get :
+//});
 
 var spurgeonRepl = {
     repl : require('repl'),
@@ -116,8 +92,67 @@ var spurgeonRepl = {
     }
 };
 
+function buildOperations (context) {
+    var spurgeon = new Spurgeon();
+
+    context.__defineGetter__('dump', function () {
+        console.log(JSON.stringify(spurgeon.root, null, 2));
+    });
+
+    context.move = {};
+
+    context.move.__defineGetter__('in', function () {
+        var targetParent, targetParentPos = spurgeon.position.slice(-1)[0] - 1;
+        if (targetParentPos < 0) {
+            console.log('Before first element. Cannot move in.');
+            return;
+        }
+        targetParent = spurgeon.currentList[targetParentPos];
+        if (!targetParent.body) {
+            console.log('Element of type [ x ] does not support children. Cannot move in.');
+            return;
+        }
+        spurgeon.currentList = targetParent.body;
+        spurgeon.position.push(spurgeon.currentList.length);
+    });
+
+    context.add = {};
+
+    context.add.__defineGetter__('point', function () {
+        var request = new SpurgeonRequest(), point = {
+            type : 'point'
+        };
+
+        request.step('label')
+        .then(function (label) {
+            if (label) {
+                if (label === '-') {
+                    point.label = true;
+                } else {
+                    point.label = label;
+                }
+            }
+        });
+
+        request.step('text')
+        .then(function (text) {
+            point.text = text;
+        });
+
+        request.whenComplete
+        .then(function () {
+            point.body = [];
+            var insertPos = spurgeon.position.pop();
+            spurgeon.currentList.splice(insertPos, 0, point);
+            spurgeon.position.push(insertPos + 1);
+        });
+
+        return request;
+    });
+}
+
 spurgeonRepl.start = function (options) {
-    var o = {}, spurgeon = new Spurgeon();
+    var o = {};
     Object.keys(options || {}).filter(function (key) {
         return key !== 'eval';
     }).forEach(function (key) {
@@ -125,7 +160,7 @@ spurgeonRepl.start = function (options) {
     });
     o['eval'] = spurgeonRepl.createEval(o);
     spurgeonRepl.session = spurgeonRepl.repl.start(o);
-    spurgeonRepl.session.context['sp'] = spurgeon;
+    buildOperations(spurgeonRepl.session.context);
     return spurgeonRepl.session;
 };
 
