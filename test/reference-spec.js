@@ -27,6 +27,14 @@ db =
    { gen:
       { 1:
          { 1: { book: 'Genesis', chapter: 1, verse: 1, version: 'KJV', text: 'In the beginning God create the heaven and the earth.' } } },
+     ob:
+      { 1:
+         { 1: { book: 'Obadiah', chapter: 1, verse: 1, version: 'KJV', text: 'The vision of Obadiah. Thus saith the Lord God concerning Edom; We have heard a rumour from the Lord, and an ambassador is sent among the heathen, Arise ye, and let us rise up against her in battle.' },
+           2: { book: 'Obadiah', chapter: 1, verse: 2, version: 'KJV', text: 'Behold, I have made thee small among the heathen: thou art greatly despised.' },
+           3: { book: 'Obadiah', chapter: 1, verse: 3, version: 'KJV', text: 'The pride of thine heart hath deceived thee, thou that dwellest in the clefts of the rock, whose habitation is high; that saith in his heart, Who shall bring me down to the ground?' },
+           4: { book: 'Obadiah', chapter: 1, verse: 4, version: 'KJV', text: 'Though thou exalt thyself as the eagle, and though thou set thy nest among the stars, thence will I bring thee down, saith the Lord.' },
+           5: { book: 'Obadiah', chapter: 1, verse: 5, version: 'KJV', text: 'If thieves came to thee, if robbers by night, (how art thou cut off!) would they not have stolen till they had enough? if the grapegatherers came to thee, would they not leave some grapes?' },
+           6: { book: 'Obadiah', chapter: 1, verse: 6, version: 'KJV', text: 'How are the things of Esau searched out! how are his hidden things sought up!' } } },
      john:
       { 1:
          {  1: { book: 'John', chapter: 1, verse:  1, version: 'KJV', text: 'In the beginning was the Word, and the Word was with God, and the Word was God.' },
@@ -1370,6 +1378,23 @@ describe('Reference', function () {
             });
         });
 
-        //TODO: describe what happens with one chapter books
+        describe('when passed verses from a one chapter book', function () {
+            it('should leave out the chapter portion of the reference', function () {
+                var result = Reference.normalize([db.kjv.ob[1][1], db.kjv.ob[1][3], db.kjv.ob[1][4], db.kjv.ob[1][5], db.kjv.ob[1][6]]);
+                expect(result).to.have.length(2);
+                expect(result[0].reference).to.equal('Obadiah 1');
+                expect(result[0].version).to.equal('KJV');
+                expect(result[0].verses).to.have.length(1);
+                expect(result[0].verses[0].book).to.equal('Obadiah');
+                expect(result[0].verses[0].chapter).to.equal(1);
+                expect(result[0].verses[0].verse).to.equal(1);
+                expect(result[1].reference).to.equal('Obadiah 3-6');
+                expect(result[1].version).to.equal('KJV');
+                expect(result[1].verses).to.have.length(4);
+                expect(result[1].verses.every(function (d, i) {
+                    return d.book === 'Obadiah' && d.chapter === 1 && d.verse === i + 3;
+                })).to.be.true;
+            });
+        });
     });
 });
