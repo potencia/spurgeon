@@ -1311,40 +1311,104 @@ describe('Reference', function () {
         });
 
         describe('when passed more than one contiguous verse', function () {
-            it('should build one normalized object', function () {
-                var result = Reference.normalize(Object.keys(verses.kjv.john[1]).reverse().map(function (v) { return verses.kjv.john[1][v]; }));
-                expect(result).to.have.length(1);
-                expect(result[0].reference).to.equal('John 1:1-51');
-                expect(result[0].version).to.equal('KJV');
-                expect(result[0].verses).to.have.length(51);
-                expect(result[0].verses.every(function (d, i) {
-                    return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
-                })).to.be.true;
+            describe('when all verses are in the same version', function () {
+                describe('when all verses are in the same chapter', function () {
+                    it('should build one normalized object', function () {
+                        var result = Reference.normalize(Object.keys(verses.kjv.john[1]).reverse().map(function (v) { return verses.kjv.john[1][v]; }));
+                        expect(result).to.have.length(1);
+                        expect(result[0].reference).to.equal('John 1:1-51');
+                        expect(result[0].version).to.equal('KJV');
+                        expect(result[0].verses).to.have.length(51);
+                        expect(result[0].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                        })).to.be.true;
+                    });
+                });
+
+                describe('when verses cross a chapter border', function () {
+                    describe('when metadata for the version/book/chapter is not available', function () {
+                        it('should build two normalized objects', function () {
+                            var result = Reference.normalize([verses.kjv.john[1][50], verses.kjv.john[1][51], verses.kjv.john[2][1], verses.kjv.john[2][2]]);
+                            expect(result).to.have.length(2);
+                            expect(result[0].reference).to.equal('John 1:50-51');
+                            expect(result[0].version).to.equal('KJV');
+                            expect(result[0].verses).to.have.length(2);
+                            expect(result[0].verses.every(function (d, i) {
+                                return d.book === 'John' && d.chapter === 1 && d.verse === i + 50;
+                            })).to.be.true;
+                            expect(result[1].reference).to.equal('John 2:1-2');
+                            expect(result[1].version).to.equal('KJV');
+                            expect(result[1].verses).to.have.length(2);
+                            expect(result[1].verses.every(function (d, i) {
+                                return d.book === 'John' && d.chapter === 2 && d.verse === i + 1;
+                            })).to.be.true;
+                        });
+                    });
+
+                    describe('when metadata for the version/book/chapter is not available', function () {
+                        it('should build one normalized object', function () {
+                            var result = Reference.normalize([verses.kjv.john[1][50], verses.kjv.john[1][51], verses.kjv.john[2][1], verses.kjv.john[2][2]], {'KJV' : {'John' : {1 : {verseCount : 51}}}});
+                            expect(result).to.have.length(1);
+                            expect(result[0].reference).to.equal('John 1:50-2:2');
+                            expect(result[0].version).to.equal('KJV');
+                            expect(result[0].verses).to.have.length(4);
+                            expect(result[0].verses.slice(0, 2).every(function (d, i) {
+                                return d.book === 'John' && d.chapter === 1 && d.verse === i + 50;
+                            })).to.be.true;
+                            expect(result[0].verses.slice(2).every(function (d, i) {
+                                return d.book === 'John' && d.chapter === 2 && d.verse === i + 1;
+                            })).to.be.true;
+                        });
+                    });
+                });
             });
         });
 
         describe('when passed more than one group of contiguous verses', function () {
-            it('should build one normalized object', function () {
-                var result = Reference.normalize([1, 5, 17, 14, 16, 13, 15, 6, 2].map(function (v) { return verses.kjv.john[1][v]; }));
-                expect(result).to.have.length(3);
-                expect(result[0].reference).to.equal('John 1:1-2');
-                expect(result[0].version).to.equal('KJV');
-                expect(result[0].verses).to.have.length(2);
-                expect(result[0].verses.every(function (d, i) {
-                    return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
-                })).to.be.true;
-                expect(result[1].reference).to.equal('John 1:5-6');
-                expect(result[1].version).to.equal('KJV');
-                expect(result[1].verses).to.have.length(2);
-                expect(result[1].verses.every(function (d, i) {
-                    return d.book === 'John' && d.chapter === 1 && d.verse === i + 5;
-                })).to.be.true;
-                expect(result[2].reference).to.equal('John 1:13-17');
-                expect(result[2].version).to.equal('KJV');
-                expect(result[2].verses).to.have.length(5);
-                expect(result[2].verses.every(function (d, i) {
-                    return d.book === 'John' && d.chapter === 1 && d.verse === i + 13;
-                })).to.be.true;
+            describe('when all groups are in the same version', function () {
+                describe('when all groups are in the same chapter', function () {
+                    it('should build multiple normalized object', function () {
+                        var result = Reference.normalize([1, 5, 17, 14, 16, 13, 15, 6, 2].map(function (v) { return verses.kjv.john[1][v]; }));
+                        expect(result).to.have.length(3);
+                        expect(result[0].reference).to.equal('John 1:1-2');
+                        expect(result[0].version).to.equal('KJV');
+                        expect(result[0].verses).to.have.length(2);
+                        expect(result[0].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                        })).to.be.true;
+                        expect(result[1].reference).to.equal('John 1:5-6');
+                        expect(result[1].version).to.equal('KJV');
+                        expect(result[1].verses).to.have.length(2);
+                        expect(result[1].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 5;
+                        })).to.be.true;
+                        expect(result[2].reference).to.equal('John 1:13-17');
+                        expect(result[2].version).to.equal('KJV');
+                        expect(result[2].verses).to.have.length(5);
+                        expect(result[2].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 13;
+                        })).to.be.true;
+                    });
+                });
+
+                describe('when all groups are in different chapters', function () {
+                    it('should build multiple normalized object', function () {
+                        var result = Reference.normalize([verses.kjv.john[2][1], verses.kjv.john[1][2], verses.kjv.john[1][1], verses.kjv.john[2][2]]);
+                        expect(result).to.have.length(2);
+                        expect(result[0].reference).to.equal('John 1:1-2');
+                        expect(result[0].version).to.equal('KJV');
+                        expect(result[0].verses).to.have.length(2);
+                        expect(result[0].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 1 && d.verse === i + 1;
+                        })).to.be.true;
+                        expect(result[1].reference).to.equal('John 2:1-2');
+                        expect(result[1].version).to.equal('KJV');
+                        expect(result[1].verses).to.have.length(2);
+                        expect(result[1].verses.every(function (d, i) {
+                            return d.book === 'John' && d.chapter === 2 && d.verse === i + 1;
+                        })).to.be.true;
+                    });
+                });
             });
         });
     });
