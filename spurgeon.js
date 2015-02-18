@@ -12,6 +12,18 @@ function Spurgeon () {
     this.position = [0];
 }
 
+function customExit (session) {
+    var realExit = session.commands['.exit'].action;
+    session.commands['.exit'].action = function () {
+        console.log('Attempting to log off of the db. Please wait...');
+        Q.ninvoke(session.context.db,'close')
+        .delay(2000).then(function () {
+            delete session.context.db;
+            process.exit();
+        });
+    }
+}
+
 function buildOperations (context, db) {
     var spurgeon = new Spurgeon(),
     pointRequest, passageRequest, inputChapterRequest,
@@ -31,6 +43,40 @@ function buildOperations (context, db) {
 
     context.__defineGetter__('dump', function () {
         console.log(JSON.stringify(spurgeon.root, null, 2));
+    });
+
+    context.__defineGetter__('neededChapters', function neededChapters () {
+        if (!neededChapters.list || neededChapters.list.length === 0) {
+            var books = {};
+            return Q.ninvoke(db.collection('verses'),'find',{version:'KJV',text:{$exists:false}},{fields:{book:1,chapter:1}})
+            .then(function (cursor) {
+                function onNext(next) {
+                    if (!next) return;
+                    if (Object.prototype.toString.call(next) === '[object Object]') {
+                        if (!books[next.book]) books[next.book]={};
+                        books[next.book][next.chapter] = true;
+                    }
+                    return Q.ninvoke(cursor, 'nextObject').then(onNext);
+                }
+                return onNext(true).then(function () {
+                    neededChapters.list = Reference.normalize(Reference.split(Object.keys(books).reduce(function (r,b) {
+                        Object.keys(books[b]).forEach(function (c){
+                            r.push(b + c);
+                        });
+                        return r;
+                    }, []).join(',')).map(function (d) {
+                        d.version='ALL';
+                        d.text='T';
+                        d.verse=1;
+                        return d;
+                    })).map(function (d) {
+                        return d.reference.split('').slice(0,-2).join('');
+                    });
+                    return neededChapters.list;
+                });
+            });
+        }
+        return neededChapters.list;
     });
 
     context.move = {};
@@ -66,7 +112,7 @@ function buildOperations (context, db) {
 
     pointRequest = new MultiPrompt()
     .setup(function () {
-        this.point = {};
+        this.point = {type:'point'};
     })
     .step('label', function (label) {
         if (label) {
@@ -172,8 +218,10 @@ function buildOperations (context, db) {
     });
 }
 
+console.log('Attempting to log on to the db. Please wait...');
 Q.nfcall(MongoClient.connect, 'mongodb://<username>:<password>@<host>:<port>/<collection>?maxPoolSize=1')
 .then(function (connectedDb) {
     var session = new REPL({ignoreUndefined : true}).start();
+    customExit(session, connectedDb);
     buildOperations(session.context, connectedDb);
 }).done();
