@@ -1,29 +1,10 @@
 'use strict';
 
-var Q = require('q');
-
-function SpurgeonRequest () {
-    this.steps = [];
-    this.complete = Q.defer();
-}
-
-function passThrough (val) { return val; }
-
-SpurgeonRequest.prototype.step = function (message, convert) {
-    var deferredStep = Q.defer();
-    this.steps.push({
-        message : message,
-        convert : convert || passThrough,
-        deferred : deferredStep
-    });
-    return deferredStep.promise;
-};
-
-Object.defineProperty(SpurgeonRequest.prototype, 'whenComplete', {
-    get : function () {
-        return this.complete.promise;
-    }
-});
+var Q = require('q'),
+MongoClient = require('mongodb').MongoClient,
+REPL = require('./lib/repl'),
+MultiPrompt = require('./lib/multi-prompt'),
+Reference = require('./lib/reference');
 
 function Spurgeon () {
     this.root = [];
@@ -31,60 +12,8 @@ function Spurgeon () {
     this.position = [0];
 }
 
-var spurgeonRepl = {
-    repl : require('repl'),
-    vm : require('vm'),
-    createEval : function (options) {
-        return function (code, context, file, callback) {
-            var err, result = undefined;
-            if (spurgeonRepl.currentRequest) {
-                var data = code.split('');
-                data.splice(0, 1);
-                data.splice(-2, 2);
-                try {
-                    data = spurgeonRepl.currentRequest.steps[0].convert(data.join(''));
-                } catch (e) {
-                    err = e;
-                }
-                if (!err) {
-                    spurgeonRepl.currentRequest.steps[0].deferred.resolve(data);
-                    spurgeonRepl.currentRequest.steps.shift();
-                    if (spurgeonRepl.currentRequest.steps.length > 0) {
-                        spurgeonRepl.session.prompt = spurgeonRepl.currentRequest.steps[0].message + '> ';
-                    } else {
-                        spurgeonRepl.session.prompt = '> ';
-                        spurgeonRepl.currentRequest.complete.resolve();
-                        spurgeonRepl.currentRequest = undefined;
-                    }
-                }
-            } else {
-                try {
-                    if (options.useGlobal) {
-                        result = spurgeonRepl.vm.runInThisContext(code, file);
-                    } else {
-                        result = spurgeonRepl.vm.runInContext(code, context, file);
-                    }
-                    if (result instanceof SpurgeonRequest) {
-                        if (result.steps.length > 0) {
-                            spurgeonRepl.currentRequest = result;
-                            spurgeonRepl.session.prompt = spurgeonRepl.currentRequest.steps[0].message + '> ';
-                        }
-                        result = undefined;
-                    } else {
-                        spurgeonRepl.session.prompt = '> ';
-                    }
-                } catch (e) {
-                    result = undefined;
-                    err = e;
-                }
-            }
-            callback(err, result);
-        };
-    }
-};
-
-function buildOperations (context) {
-    var spurgeon = new Spurgeon();
+function buildOperations (context, db) {
+    var spurgeon = new Spurgeon(), pointRequest, passageRequest;
 
     context.__defineGetter__('root', function () {
         return spurgeon.root;
@@ -125,50 +54,64 @@ function buildOperations (context) {
 
     context.add = {};
 
-    context.add.__defineGetter__('point', function () {
-        var request = new SpurgeonRequest(), point = {
-            type : 'point'
-        };
-
-        request.step('label')
-        .then(function (label) {
-            if (label) {
-                if (label === '-') {
-                    point.label = true;
-                } else {
-                    point.label = label;
-                }
+    pointRequest = new MultiPrompt()
+    .setup(function () {
+        this.point = {};
+    })
+    .step('label', function (label) {
+        if (label) {
+            if (label === '-') {
+                this.point.label = true;
+            } else {
+                this.point.label = label;
             }
-        });
+        }
+    })
+    .step('text', function (text) {
+        this.point.text = text;
+    })
+    .whenFinished(function () {
+        this.point.body = [];
+        var insertPos = spurgeon.position.pop();
+        spurgeon.currentList.splice(insertPos, 0, this.point);
+        spurgeon.position.push(insertPos + 1);
+    });
 
-        request.step('text')
-        .then(function (text) {
-            point.text = text;
-        });
+    context.add.__defineGetter__('point', function () {
+        return pointRequest;
+    });
 
-        request.whenComplete
-        .then(function () {
-            point.body = [];
-            var insertPos = spurgeon.position.pop();
-            spurgeon.currentList.splice(insertPos, 0, point);
-            spurgeon.position.push(insertPos + 1);
+    passageRequest = new MultiPrompt()
+    .step('reference', function (reference) {
+        this.query = Reference.split(reference);
+    })
+    .whenFinished(function () {
+        var self = this, insertPos = spurgeon.position.slice(-1)[0], parent = spurgeon.currentList;
+        return Q.ninvoke(db.collection('verses'), 'find', {$or : self.query})
+        .then(function (cursor) {
+            return Q.ninvoke(cursor, 'toArray');
+        })
+        .then(function (verses) {
+            var passages = Reference.normalize(verses);
+            passages.forEach(function (passage) {
+                passage.type = 'passage';
+            });
+            passages.unshift(insertPos, 0);
+            Array.prototype.splice.apply(parent, passages);
+            if (spurgeon.currentList === parent) {
+                spurgeon.position.push(spurgeon.position.pop() + passages.length - 2);
+            }
+            console.log('Total verses added:', verses.length);
         });
+    });
 
-        return request;
+    context.add.__defineGetter__('passage', function () {
+        return passageRequest;
     });
 }
 
-spurgeonRepl.start = function (options) {
-    var o = {};
-    Object.keys(options || {}).filter(function (key) {
-        return key !== 'eval';
-    }).forEach(function (key) {
-        o[key] = options[key];
-    });
-    o['eval'] = spurgeonRepl.createEval(o);
-    spurgeonRepl.session = spurgeonRepl.repl.start(o);
-    buildOperations(spurgeonRepl.session.context);
-    return spurgeonRepl.session;
-};
-
-spurgeonRepl.start({ignoreUndefined : true});
+Q.nfcall(MongoClient.connect, 'mongodb://<username>:<password>@<host>:<port>/<collection>?maxPoolSize=1')
+.then(function (connectedDb) {
+    var session = new REPL({ignoreUndefined : true}).start();
+    buildOperations(session.context, connectedDb);
+}).done();
