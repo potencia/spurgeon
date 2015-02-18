@@ -31,15 +31,6 @@ function Spurgeon () {
     this.position = [0];
 }
 
-Spurgeon.prototype.clear = function () {
-    this.currentList.length = 0;
-    this.position = [0];
-};
-
-//Object.defineProperty(Spurgeon.prototype, 'addPoint', {
-//    get :
-//});
-
 var spurgeonRepl = {
     repl : require('repl'),
     vm : require('vm'),
@@ -95,6 +86,10 @@ var spurgeonRepl = {
 function buildOperations (context) {
     var spurgeon = new Spurgeon();
 
+    context.__defineGetter__('root', function () {
+        return spurgeon.root;
+    });
+
     context.__defineGetter__('dump', function () {
         console.log(JSON.stringify(spurgeon.root, null, 2));
     });
@@ -114,6 +109,18 @@ function buildOperations (context) {
         }
         spurgeon.currentList = targetParent.body;
         spurgeon.position.push(spurgeon.currentList.length);
+    });
+
+    context.move.__defineGetter__('out', function () {
+        if (spurgeon.position.length < 2) {
+            console.log('Already all the way out.');
+            return;
+        }
+        spurgeon.position.pop();
+        spurgeon.currentList = spurgeon.root;
+        spurgeon.position.slice(0, -1).forEach(function (insertPos) {
+            spurgeon.currentList = spurgeon.currentList[insertPos - 1].body;
+        });
     });
 
     context.add = {};
