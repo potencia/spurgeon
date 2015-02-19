@@ -1,0 +1,5 @@
+{
+  "mongo": {
+    "connection": "mongodb://<username>:<password>@<host>:<port>/<collection>?maxPoolSize=1"
+  }
+}

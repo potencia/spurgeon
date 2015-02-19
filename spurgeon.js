@@ -1,6 +1,7 @@
 'use strict';
 
-var Q = require('q'),
+var config = require('spurgeon.json'),
+Q = require('q'),
 MongoClient = require('mongodb').MongoClient,
 REPL = require('./lib/repl'),
 MultiPrompt = require('./lib/multi-prompt'),
@@ -219,7 +220,7 @@ function buildOperations (context, db) {
 }
 
 console.log('Attempting to log on to the db. Please wait...');
-Q.nfcall(MongoClient.connect, 'mongodb://<username>:<password>@<host>:<port>/<collection>?maxPoolSize=1')
+Q.nfcall(MongoClient.connect, config.mongo.connection)
 .then(function (connectedDb) {
     var session = new REPL({ignoreUndefined : true}).start();
     customExit(session, connectedDb);
