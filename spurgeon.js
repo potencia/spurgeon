@@ -1,6 +1,6 @@
 'use strict';
 
-var config = require('spurgeon.json'),
+var config = require('./spurgeon.json'),
 Q = require('q'),
 MongoClient = require('mongodb').MongoClient,
 REPL = require('./lib/repl'),
