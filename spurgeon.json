@@ -1,5 +1,10 @@
 {
   "mongo": {
-    "connection": "mongodb://<username>:<password>@<host>:<port>/<collection>?maxPoolSize=1"
+    "connection": "mongodb://<username>:<password>@<host>:<port>/<collection>?ssl=true",
+    "options": {
+      "server": {
+        "sslCA": "<CACertBytesGoHere>"
+      }
+    }
   }
 }
