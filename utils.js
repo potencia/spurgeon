@@ -1,0 +1,13 @@
+//To push all input verses to the db -> inputVerses.map(mapToUpserts).reduce(Q.when, Q());
+var Reference=require("./lib/reference");
+function getData(obj){if(!(arguments.length<2)){var c,l,d;for(d=obj,c=1,l=arguments.length-1;l>c;c++)if(d=d[arguments[c]],!d)return;return d[arguments[c]]}}
+function setData(data,obj,flat,join){if(!(arguments.length<5)){var c,l,d,f;for(f=[],d=obj,c=4,l=arguments.length-1;l>c;c++)f.push(arguments[c]),d[arguments[c]]||(d[arguments[c]]={}),d=d[arguments[c]];f.push(arguments[c]),d[arguments[c]]=flat[f.join(join)]=data}}
+function reduceToMetrics(r,d){r.versions||(r.versions={},r.versionsFlat={},r.books={},r.booksFlat={});var v=getData(r.versions,d.version,d.book,d.chapter);return v||(v={total:0,highest:0}),v.total++,v.highest<d.verse&&(v.highest=d.verse),setData(v,r.versions,r.versionsFlat,":",d.version,d.book,d.chapter),setData(v,r.books,r.booksFlat,":",d.book,d.chapter,d.version),r}
+function toQuery(v){var q={};return["version","book","chapter","verse"].forEach(function(k){q[k]=v[k]}),q}
+function mapToUpserts(v){return function(last){return null==last?mapToUpserts.ctr=0:(mapToUpserts.ctr++,mapToUpserts.ctr%100===0&&console.log(mapToUpserts.ctr)),Q.ninvoke(db.collection("verses"),"update",toQuery(v),v,{upsert:!0})}}
+function allChapters(metrics,map){return Object.keys(metrics.booksFlat).reduce(function(r,d){var a=d.split(":");return"KJV"===a[2]&&r.push({book:a[0],chapter:parseInt(a[1])}),r},[]).map(map||function(d){return d})}
+function allChaptersQuery(metrics){return{$or:allChapters(metrics,function(d){return d.text={$exists:!0},d})}}
+function keysMatch(o){return Object.keys(o).reduce(function(r,k){return r.value?(r.value!==o[k]&&r.failed.push(k),r):{value:o[k],failed:[]}},{})}
+function checkVersionsMatch(metrics){return Object.keys(metrics.books).reduce(function(r,b){return r[b]=Object.keys(metrics.books[b]).reduce(function(r,c){var t,h,d=Object.keys(metrics.books[b][c]).reduce(function(r,v){return void 0===r.total&&(r.total={}),r.total[v]=metrics.books[b][c][v].total,void 0===r.highest&&(r.highest={}),r.highest[v]=metrics.books[b][c][v].highest,r},{});return t=keysMatch(d.total),h=keysMatch(d.highest),r[c]=t.value===h.value&&0===t.failed.length&&0===h.failed.length?{verses:t.value,versions:Object.keys(metrics.books[b][c]).length}:d,r},{}),r},{})}
+function getRealReferences(ref){return Reference.normalize(ref.map(Reference.split).reduce(function(r,d){return Array.prototype.push.apply(r,d),r},[]).map(function(d){return d.text="!",d.version="!",d})).map(function(d){return d.reference})}
+function dayOfYear(){return(new Date(new Date(Date.now()).toDateString()).getTime()-new Date(2015,0,1).getTime())/1e3/60/60/24+1}
